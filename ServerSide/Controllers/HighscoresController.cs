@@ -37,7 +37,7 @@ namespace ServerSide.Controllers
         public async Task<ActionResult<Highscore>> PostHighscore(HighscoreDto highscore)
         {
             HttpClient httpClient = new HttpClient();
-            var res = httpClient.GetAsync($"https://www.google.com/recaptcha/api/siteverify?secret=" + _configuration["GoogleReCaptcha: secret"] + "&response=" + highscore.captcha).Result;
+            var res = httpClient.GetAsync($"https://www.google.com/recaptcha/api/siteverify?secret=" + _configuration["GoogleReCaptcha:secret"] + "&response=" + highscore.captcha).Result;
             if (res.StatusCode != HttpStatusCode.OK)
             {
                 return BadRequest("You are a bot!");
@@ -65,6 +65,7 @@ namespace ServerSide.Controllers
             {
                 _context.Highscores.Add(highscore);
                 await _context.SaveChangesAsync();
+                return Ok(highscore);
             }
             else
             {

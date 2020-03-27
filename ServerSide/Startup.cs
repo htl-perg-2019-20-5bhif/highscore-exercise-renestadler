@@ -26,6 +26,15 @@ namespace ServerSide
                      Configuration["CosmosDB:DatabaseName"]));
             //options.UseSqlServer(Configuration["ConnectionStrings:DefaultConnection"]));
 
+            services.AddCors(options =>
+            {
+                options.AddPolicy("_myAllowSpecificOrigins",
+                builder =>
+                {
+                    builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                });
+            });
+
 
             services.AddControllers();
         }
@@ -41,6 +50,8 @@ namespace ServerSide
             }
 
             app.UseRouting();
+
+            app.UseCors("_myAllowSpecificOrigins");
 
             app.UseAuthorization();
 
