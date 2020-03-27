@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace ServerSide
 {
@@ -7,13 +6,16 @@ namespace ServerSide
     {
         public DbSet<Highscore> Highscores { get; set; }
 
-        public HighscoreContext(DbContextOptions<HighscoreContext> options, IConfiguration configuration) : base(options)
+        public HighscoreContext(DbContextOptions<HighscoreContext> options) : base(options)
         {
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.HasDefaultContainer("Highscore");
+            modelBuilder.Entity<Highscore>().HasNoDiscriminator();
         }
     }
 }

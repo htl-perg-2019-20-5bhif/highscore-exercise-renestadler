@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Threading.Tasks;
 
 namespace ServerSide
 {
@@ -20,11 +21,11 @@ namespace ServerSide
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<HighscoreContext>(options =>
-                options.UseSqlServer(Configuration["ConnectionStrings:DefaultConnection"]));
-            /* services.AddDbContext<HighscoreContext>(options =>
-                 options.UseCosmos(Configuration["ConnectionStrings:AccountEndpoint"],
-                     Configuration["ConnectionStrings:AccountKey"],
-                     Configuration["ConnectionStrings:DatabaseName"]));*/
+                 options.UseCosmos(Configuration["CosmosDB:AccountEndpoint"],
+                     Configuration["CosmosDB:AccountKey"],
+                     Configuration["CosmosDB:DatabaseName"]));
+            //options.UseSqlServer(Configuration["ConnectionStrings:DefaultConnection"]));
+
 
             services.AddControllers();
         }
@@ -32,6 +33,8 @@ namespace ServerSide
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            UpdateDatabaseAsync(app).Wait();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -45,6 +48,16 @@ namespace ServerSide
             {
                 endpoints.MapControllers();
             });
+        }
+
+        private async Task UpdateDatabaseAsync(IApplicationBuilder app)
+        {
+            using var serviceScope = app.ApplicationServices
+                .GetRequiredService<IServiceScopeFactory>()
+                .CreateScope();
+            using var context = serviceScope.ServiceProvider.GetService<HighscoreContext>();
+            await context.Database.EnsureDeletedAsync();
+            await context.Database.EnsureCreatedAsync();
         }
     }
 }
