@@ -1,6 +1,6 @@
 ﻿namespace ServerSide
 {
-    public class Entry
+    public class Highscore
     {
         public int ID { get; set; }
 
