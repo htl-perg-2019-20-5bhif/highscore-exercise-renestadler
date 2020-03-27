@@ -11,6 +11,7 @@
   "author": "Rainer Stropek, CoderDojo Linz",
   "license": "MIT",
   "devDependencies": {
+    "@types/jquery": "^3.3.34",
     "@types/node": "^12.12.31",
     "@typescript-eslint/eslint-plugin": "^2.24.0",
     "@typescript-eslint/parser": "^2.24.0",
@@ -28,6 +29,7 @@
     "webpack-merge": "^4.2.2"
   },
   "dependencies": {
+    "jquery": "^3.4.1",
     "phaser": "^3.22.0"
   }
 }

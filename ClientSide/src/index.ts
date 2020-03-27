@@ -344,70 +344,13 @@ class InputPanel extends Phaser.Scene {
   }
 }
 
-class Starfield extends Phaser.Scene {
-  stars: GameObjects.Blitter;
-
-  distance = 300;
-  speed = 250;
-
-  max = 500;
-  xx = [];
-  yy = [];
-  zz = [];
-
-  constructor() {
-    super({ key: "Starfield" });
-  }
-
-  preload() {
-    this.load.image("star", "assets/demoscene/star4.png");
-  }
-
-  create() {
-    //  Do this, otherwise this Scene will steal all keyboard input
-    this.input.keyboard.enabled = false;
-
-    this.stars = this.add.blitter(0, 0, "star");
-
-    for (let i = 0; i < this.max; i++) {
-      this.xx[i] = Math.floor(Math.random() * 800) - 400;
-      this.yy[i] = Math.floor(Math.random() * 600) - 300;
-      this.zz[i] = Math.floor(Math.random() * 1700) - 100;
-
-      const perspective = this.distance / (this.distance - this.zz[i]);
-      const x = 400 + this.xx[i] * perspective;
-      const y = 300 + this.yy[i] * perspective;
-
-      this.stars.create(x, y);
-    }
-  }
-
-  update(time, delta) {
-    for (let i = 0; i < this.max; i++) {
-      const perspective = this.distance / (this.distance - this.zz[i]);
-      const x = 400 + this.xx[i] * perspective;
-      const y = 300 + this.yy[i] * perspective;
-
-      this.zz[i] += this.speed * (delta / 1000);
-
-      if (this.zz[i] > 300) {
-        this.zz[i] -= 600;
-      }
-
-      const bob = this.stars.children.list[i];
-
-      bob.x = x;
-      bob.y = y;
-    }
-  }
-}
-
 class HighscoreScene extends Phaser.Scene {
   playerText: GameObjects.BitmapText;
   score: number;
   highscores: Highscore[];
   enterNameTxt: GameObjects.BitmapText;
   initials: string;
+  apiUrl = "https://highscoresample-api.azurewebsites.net/api/Highscores";
 
   constructor() {
     super("HighscoreScene");
@@ -426,7 +369,14 @@ class HighscoreScene extends Phaser.Scene {
   }
 
   async create() {
+    const text = this.createInfoText(
+      "Getting Highscores...\nthis might take a while"
+    );
+
     this.highscores = await this.getHighscoresFromAPI();
+
+    text.destroy();
+
     const rank = this.getRank(this.highscores);
     const formattedRank = this.formatRank(rank);
     const formattedScore = this.formatScore(`${this.score}`, 5);
@@ -453,6 +403,19 @@ class HighscoreScene extends Phaser.Scene {
     panel.events.on("submitName", this.submitName, this);
   }
 
+  createInfoText(content: string): GameObjects.BitmapText {
+    const text = this.add
+      .bitmapText(
+        this.game.canvas.width / 2,
+        this.game.canvas.height / 2,
+        "arcade",
+        content
+      )
+      .setTint(0xfafafa);
+    text.setOrigin(0.5, 0.5);
+    return text;
+  }
+
   formatRank(rank: number): string {
     let extension = "TH";
     if (rank === 1) {
@@ -467,11 +430,12 @@ class HighscoreScene extends Phaser.Scene {
 
   getRank(highscores: Highscore[]) {
     const ownHighscore = this.score;
-    highscores.forEach((highscore, index) => {
+    for (let i = 0; i < highscores.length; i++) {
+      const highscore = highscores[i];
       if (ownHighscore > highscore.score) {
-        return index + 1;
+        return i + 1;
       }
-    });
+    }
     return highscores.length + 1;
   }
 
@@ -489,27 +453,34 @@ class HighscoreScene extends Phaser.Scene {
       highscore: highscore,
       captcha: captchaToken
     };
-    const response = await fetch("https://highscoresample-api.azurewebsites.net/api/Highscores", {
+
+    const response = await fetch(this.apiUrl, {
       method: "POST",
+      body: JSON.stringify(highscoreDto),
       headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(highscoreDto)
+        "Content-Type": "application/json;",
+        origin: document.location.href
+      }
     });
-    console.log(response);
+
+    this.highscores.push(highscore);
   }
 
   async getHighscoresFromAPI(): Promise<Highscore[]> {
-    //const highscores: Highscore[] = [{ initials: "MH", score: 10 }];
-    const response = await fetch("https://highscoresample-api.azurewebsites.net/api/Highscores");
-    console.log(response);
+    const response = await fetch(this.apiUrl);
+    if (response.body == null) {
+      return [];
+    }
+
     const highscores = await response.json();
-    return Promise.resolve(highscores);
+    console.log;
+    return highscores;
   }
 
   async submitName() {
     this.saveHighscore(this.score, this.initials);
-    this.highscores = await this.getHighscoresFromAPI();
+
+    this.highscores = this.highscores.sort((a, b) => b.score - a.score);
 
     const defaultY = 310;
     const spacing = 50;
@@ -517,22 +488,21 @@ class HighscoreScene extends Phaser.Scene {
     this.enterNameTxt.destroy();
     this.playerText.destroy();
     this.highscores.forEach((highscore, index) => {
-      console.log("asfd");
       let color = 0x00bfff;
       switch (index % 5) {
-        case 0:
+        case 1:
           color = 0xff8200;
           break;
-        case 1:
-          color = 0xffff00;
-          break;
         case 2:
-          color = 0x00ff00;
+          color = 0xffff00;
           break;
         case 3:
           color = 0x00ff00;
           break;
         case 4:
+          color = 0x00ff00;
+          break;
+        case 0:
           color = 0x00bfff;
           break;
       }
@@ -548,7 +518,7 @@ class HighscoreScene extends Phaser.Scene {
           "arcade",
           `${formattedRank}   ${formattedScore}    ${initials}`
         )
-        .setTint(0x00bfff);
+        .setTint(color);
     });
   }
 
