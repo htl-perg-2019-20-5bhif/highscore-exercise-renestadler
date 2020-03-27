@@ -50,31 +50,37 @@ namespace ServerSide.Controllers
                 return BadRequest("You are a bot!");
             }
 
+            return await AddHighscore(highscore.Highscore);
+        }
+
+        public async Task<ActionResult<Highscore>> AddHighscore(Highscore highscore)
+        {
+            if (highscore.Score < 0)
+            {
+                return BadRequest("Not a highScore");
+            }
+
             var highscores = await _context.Highscores.OrderByDescending(a => a.Score).ToListAsync();
             if (highscores.Count < 10)
             {
-                _context.Highscores.Add(highscore.Highscore);
+                _context.Highscores.Add(highscore);
                 await _context.SaveChangesAsync();
             }
             else
             {
-                var curHighscore = highscore.Highscore;
                 for (int i = 0; i < highscores.Count; i++)
                 {
-                    if (curHighscore.Score > highscores[i].Score)
+                    if (highscore.Score > highscores[i].Score)
                     {
-                        highscores.Remove(highscores.Last());
-                        highscores.Add(highscore.Highscore);
+                        _context.Remove(highscores.Last());
+                        _context.Add(highscore);
+                        await _context.SaveChangesAsync();
                         return Ok(highscore);
                     }
                 }
             }
             return BadRequest("Not a highScore");
-        }
 
-        private bool HighscoreExists(int id)
-        {
-            return _context.Highscores.Any(e => e.ID == id);
         }
     }
 }

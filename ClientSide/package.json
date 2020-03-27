@@ -11,6 +11,7 @@
   "author": "Rainer Stropek, CoderDojo Linz",
   "license": "MIT",
   "devDependencies": {
+    "@types/node": "^12.12.31",
     "@typescript-eslint/eslint-plugin": "^2.24.0",
     "@typescript-eslint/parser": "^2.24.0",
     "clean-webpack-plugin": "^3.0.0",

@@ -1,0 +1,13 @@
+version: "3.4"
+
+services:
+  highscoreapi:
+    image: renestadler/highscoreapi
+    ports: 
+      - "5000:80"
+  frontend:
+    image: renestadler/highscorefrontend
+    depends_on:
+      - highscoreapi
+    ports:
+      - "8080:80"

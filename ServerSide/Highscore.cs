@@ -1,8 +1,10 @@
-﻿namespace ServerSide
+﻿using System;
+
+namespace ServerSide
 {
     public class Highscore
     {
-        public int ID { get; set; }
+        public Guid ID { get; set; } = Guid.NewGuid();
 
         public string Initials { get; set; }
 

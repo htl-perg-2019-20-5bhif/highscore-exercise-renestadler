@@ -407,7 +407,6 @@ class HighscoreScene extends Phaser.Scene {
   score: number;
   highscores: Highscore[];
   enterNameTxt: GameObjects.BitmapText;
-  apiUrl = "http://www.highscoresample.azurewebsites.net";
   initials: string;
 
   constructor() {
@@ -490,7 +489,7 @@ class HighscoreScene extends Phaser.Scene {
       highscore: highscore,
       captcha: captchaToken
     };
-    const response = await fetch(this.apiUrl, {
+    const response = await fetch("https://highscoresample-api.azurewebsites.net/api/Highscores", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -502,7 +501,7 @@ class HighscoreScene extends Phaser.Scene {
 
   async getHighscoresFromAPI(): Promise<Highscore[]> {
     //const highscores: Highscore[] = [{ initials: "MH", score: 10 }];
-    const response = await fetch(this.apiUrl);
+    const response = await fetch("https://highscoresample-api.azurewebsites.net/api/Highscores");
     console.log(response);
     const highscores = await response.json();
     return Promise.resolve(highscores);
