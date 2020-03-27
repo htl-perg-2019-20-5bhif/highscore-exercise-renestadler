@@ -322,12 +322,13 @@ class InputPanel extends Phaser.Scene {
   pressKey() {
     const x = this.cursor.x;
     const y = this.cursor.y;
-    const nameLength = this.name.length;
+    this.name = this.name.replace(/[^a-zA-Z.-]+/, "");
+    const nameLength = this.name.trim().length;
 
     this.block.x = this.text.x - 10 + x * 52;
     this.block.y = this.text.y - 2 + y * 64;
 
-    if (x === 9 && y === 2 && nameLength > 0) {
+    if (x === 9 && y === 2 && nameLength > 0 && /[a-zA-Z.-]+/.test(this.name)) {
       //  Submit
       this.events.emit("submitName", this.name);
     } else if (x === 8 && y === 2 && nameLength > 0) {
@@ -454,6 +455,7 @@ class HighscoreScene extends Phaser.Scene {
       captcha: captchaToken
     };
 
+    this.highscores.push(highscore);
     const response = await fetch(this.apiUrl, {
       method: "POST",
       body: JSON.stringify(highscoreDto),
@@ -462,8 +464,6 @@ class HighscoreScene extends Phaser.Scene {
         origin: document.location.href
       }
     });
-
-    this.highscores.push(highscore);
   }
 
   async getHighscoresFromAPI(): Promise<Highscore[]> {
@@ -473,7 +473,6 @@ class HighscoreScene extends Phaser.Scene {
     }
 
     const highscores = await response.json();
-    console.log;
     return highscores;
   }
 
@@ -487,7 +486,11 @@ class HighscoreScene extends Phaser.Scene {
     this.scene.stop("InputPanel");
     this.enterNameTxt.destroy();
     this.playerText.destroy();
+
     this.highscores.forEach((highscore, index) => {
+      if (index > 9) {
+        return;
+      }
       let color = 0x00bfff;
       switch (index % 5) {
         case 1:
